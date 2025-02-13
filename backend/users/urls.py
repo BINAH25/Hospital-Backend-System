@@ -10,14 +10,9 @@ urlpatterns = [
     path("get/all/doctors/", views.GetAllDoctorsAPI.as_view()),
     path("assign/doctor/", views.AssignDoctorAPI.as_view()),
     path("doctor-patients/", views.GetDoctorPatientsAPI.as_view()),
+    path("doctor-notes/", views.DoctorNoteAPI.as_view()),
+    path("get-pationt-action-steps/", views.PatientActionableStepsAPI.as_view()),
+    path("get-pationt-reminders/", views.PatientRemindersAPI.as_view()),
 
-
-    # path("auth/verify/", views.EmailVerificationAPI.as_view()),  
-    # path("auth/logout/", views.LogOutAPI.as_view()),  
-    # path("auth/change-password/", views.ChangePasswordAPI.as_view()),  
-    # path("auth/reset-password/", views.ResetPasswordAPI.as_view()),  
-    # path("auth/reset-password-done/", views.ResetPasswordDoneAPI.as_view()),  
-    # path("auth/delete-account/", views.DeleteAccountAPI.as_view()),  
-     
     
 ]

@@ -38,18 +38,21 @@ class DoctorPatientSerializer(serializers.ModelSerializer):
         fields = ["id", "patient", "created_at"]
         
         
+class DoctorNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DoctorNote
+        fields = ["id", "doctor", "patient", "note", "created_at"]
 
-# class DoctorNoteSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = DoctorNote
-#         fields = ["id", "doctor", "patient", "note", "created_at"]
+class ActionableStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActionableStep
+        fields = ["id", "note", "step_type", "description", "scheduled_date", "completed", "duration","frequency"]
 
-# class ActionableStepSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = ActionableStep
-#         fields = ["id", "patient", "doctor_note", "step_type", "description", "schedule_date", "completed", "created_at"]
-
-
+class ReminderSerializer(serializers.ModelSerializer):
+    patient = UserLoginSerializer()
+    class Meta:
+        model = Reminder
+        fields = ["id", "patient", "actionable_step", "scheduled_time", "sent"]
 
 class CodeEmailSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)

@@ -64,6 +64,8 @@ class ActionableStep(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     note = models.ForeignKey(DoctorNote, on_delete=models.CASCADE, related_name="steps")
+    frequency = models.CharField(max_length=220, null=True, blank=True)
+    duration = models.CharField(max_length=200, null=True, blank=True)
     step_type = models.CharField(max_length=10, choices=STEP_TYPES)
     description = models.TextField()
     scheduled_date = models.DateTimeField(null=True, blank=True)  # For scheduled tasks
@@ -73,3 +75,13 @@ class ActionableStep(models.Model):
 
     def __str__(self):
         return f"{self.step_type} - {self.description[:30]}"
+
+
+class Reminder(models.Model):
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reminders")
+    actionable_step = models.ForeignKey(ActionableStep, on_delete=models.CASCADE, related_name="reminders")
+    scheduled_time = models.DateTimeField()
+    sent = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Reminder for {self.patient.email} at {self.scheduled_time}"
