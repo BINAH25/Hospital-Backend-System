@@ -19,7 +19,7 @@ def get_auth_for_user(user):
     refresh = RefreshToken.for_user(user)
     return {
         'user':UserLoginSerializer(user).data,
-        'permission':get_all_user_permissions(user),
+        # 'permission':get_all_user_permissions(user),
         'refresh': str(refresh),
         'token': str(refresh.access_token) 
     }
@@ -82,3 +82,18 @@ class RegistrationAPI(generics.GenericAPIView):
                 {"status": "failure", "detail": serializer.errors},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+            
+            
+class GetAllDoctorsAPI(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    required_permissions = [ "setup.view_institution"]
+
+    serializer_class = UserRegistrationSerializer
+
+    def get(self, request,*args, **kwargs):
+        doctors = User.objects.filter(user_type="Doctor").all()
+        serializers = self.serializer_class(doctors,many=True)
+        return Response(
+            {"status": "success", "success_message": serializers.data},
+            status=200
+        )       

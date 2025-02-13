@@ -7,6 +7,8 @@ urlpatterns = [
     # USER URLS
     path("", views.SignInAPI.as_view()),
     path("register/", views.RegistrationAPI.as_view()),  
+    path("get/all/doctors/", views.GetAllDoctorsAPI.as_view()),
+
     # path("auth/verify/", views.EmailVerificationAPI.as_view()),  
     # path("auth/logout/", views.LogOutAPI.as_view()),  
     # path("auth/change-password/", views.ChangePasswordAPI.as_view()),  
