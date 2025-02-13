@@ -26,3 +26,50 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+    
+class PatientDoctorAssignment(models.Model):
+    patient = models.OneToOneField(User, on_delete=models.CASCADE, related_name="assigned_doctor")
+    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="patients")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.patient.name} → {self.doctor.name}"
+    
+    
+class DoctorNote(models.Model):
+    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name="doctor_notes")
+    patient = models.ForeignKey(User, on_delete=models.CASCADE, related_name="patient_notes")
+    note = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def set_encrypted_note(self, note_text):
+        self.note = cipher.encrypt(note_text.encode())
+
+    def get_decrypted_note(self):
+        return cipher.decrypt(self.note).decode()
+
+    def __str__(self):
+        return f"Note by {self.doctor.name} for {self.patient.name} on {self.created_at}"
+    
+class ActionableStep(models.Model):
+    CHECKLIST = "Checklist"
+    PLAN = "Plan"
+
+    STEP_TYPES = [
+        (CHECKLIST, "Checklist"),
+        (PLAN, "Plan"),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    note = models.ForeignKey(DoctorNote, on_delete=models.CASCADE, related_name="steps")
+    step_type = models.CharField(max_length=10, choices=STEP_TYPES)
+    description = models.TextField()
+    scheduled_date = models.DateTimeField(null=True, blank=True)  # For scheduled tasks
+    completed = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.step_type} - {self.description[:30]}"

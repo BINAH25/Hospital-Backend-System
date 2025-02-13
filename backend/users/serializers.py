@@ -24,18 +24,31 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {'password': {'write_only': True}}
         
-    # def create(self, validated_data):
-    #     # CLEAN ALL VALUES
-    #     email_address = validated_data['email_address'].lower()
-    #     password = validated_data['password']
-    #     # CREATE A NEW  USER
-    #     user = User.objects.create(
-    #         username=email_address,
-    #         email_address=email_address,
-    #     )
-    #     user.set_password(password)
-    #     user.save()
-    #     return user
+class PatientDoctorAssignmentSerializer(serializers.ModelSerializer):
+    patient = UserLoginSerializer()
+    doctor = UserLoginSerializer()
+    class Meta:
+        model = PatientDoctorAssignment
+        fields = ["id", "patient", "doctor", "created_at"]
+        
+class DoctorPatientSerializer(serializers.ModelSerializer):
+    patient = UserLoginSerializer()
+    class Meta:
+        model = PatientDoctorAssignment
+        fields = ["id", "patient", "created_at"]
+        
+        
+
+# class DoctorNoteSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = DoctorNote
+#         fields = ["id", "doctor", "patient", "note", "created_at"]
+
+# class ActionableStepSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ActionableStep
+#         fields = ["id", "patient", "doctor_note", "step_type", "description", "schedule_date", "completed", "created_at"]
+
 
 
 class CodeEmailSerializer(serializers.Serializer):
