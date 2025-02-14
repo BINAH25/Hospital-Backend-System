@@ -24,3 +24,4 @@ python-dotenv>=1.0.1
 redis>=5.0.8
 requests>=2.32.3
 uuid7>=0.1.0
+django-schema-viewer>=0.5.2
