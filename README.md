@@ -82,8 +82,8 @@ Redis
 ## Setup
 1. **Clone the Repository:**
    ```bash
-   https://github.com/BINAH25/Hospital-Backend-System-.git
-   cd Hospital-Backend-System-
+   https://github.com/BINAH25/Hospital-Backend-System.git
+   cd Hospital-Backend-System
 
 2. **Create Virtual Environment:**
    ```bash
