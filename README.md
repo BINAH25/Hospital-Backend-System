@@ -2,6 +2,8 @@
 ## Overview
 This is a backend system for a hospital that handles user signups, patient–doctor assignments, doctor note submissions, and dynamic scheduling of actionable steps based on live LLM processing. The system ensures data security through encryption and leverages Celery and Redis for background task processing.
 
+| API DOCUMENTATION URL| https://github.com/BINAH25/Hospital-Backend-System-/blob/main/backend/api_documentation.md|
+| ---------------------|--------------------------------------------------------------------------------------------|
 
 ## ER Diagram of Database Design
 ![alt text](graph.png)
