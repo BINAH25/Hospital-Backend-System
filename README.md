@@ -51,7 +51,7 @@ Example: If a prescription plan lasts 5 days, the scheduler will run at 6 AM dai
 
 3. **Doctor Notes & LLM Integration**: Doctors submit encrypted notes, and an LLM extracts actionable steps.
 
-4. **Doctor-Patient Assignment** Dynamic Scheduling: Automated reminders based on the treatment plan, dynamically adjusting for missed check-ins.
+4. **Dynamic Scheduling** Dynamic Scheduling: Automated reminders based on the treatment plan, dynamically adjusting for missed check-ins.
 
 5. **Background Task Processing**: Uses Celery and Redis for handling scheduled tasks.
 
