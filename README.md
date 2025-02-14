@@ -5,6 +5,41 @@ This is a backend system for a hospital that handles user signups, patient–doc
 | API DOCUMENTATION URL and ENDPOINTS| https://github.com/BINAH25/Hospital-Backend-System-/blob/main/backend/api_documentation.md|
 | ---------------------|--------------------------------------------------------------------------------------------|
 
+# Documentation & Justification of Design
+
+## Authentication Strategy
+
+I use Django's built-in authentication system with Django Rest Framework (DRF) and JWT (JSON Web Token). This provides secure authentication while allowing seamless API-based interactions.
+
+## Password Storage
+
+Passwords are securely stored using Django's default password hashing mechanism (PBKDF2), which ensures robust security against brute-force attacks.
+
+## Data Encryption
+
+To protect sensitive data, especially doctor notes, I use end-to-end encryption (E2EE). Notes are encrypted using AES-256 before storage, ensuring only the doctor and patient can decrypt and view them. The encryption key is securely managed and not stored alongside the data.
+
+## Scheduling Strategy
+Technology Choice: Celery, Redis, and Celery Beat
+- Celery (Task Queue): Handles asynchronous processing of LLM-generated tasks and scheduling reminders efficiently.
+- Redis (Message Broker): Acts as an in-memory store for Celery, ensuring low-latency task execution.
+- Celery Beat (Periodic Task Scheduler): Manages the scheduling of reminders based on the actionable steps extracted from the LLM.
+
+## Scheduling Logic
+- From the doctor’s note, Gemini Flash extracts the duration of the prescription plan.
+- A function runs every day at 6 AM to check whether the duration is greater than 0.
+- If duration > 0, an email is sent to the patient reminding them to check in.
+- If the patient checks in, the duration is decreased by 1.
+- If the patient does not check in, the duration remains the same.
+- The scheduler continues running until the duration reaches 0.
+Example: If a prescription plan lasts 5 days, the scheduler will run at 6 AM daily for a maximum of 5 days. However, if the patient skips a check-in, the duration does not decrease, meaning the reminders will continue beyond 5 days until the patient completes 5 successful check-ins.
+
+
+## Data Storage
+- PostgreSQL is used as the primary database for structured storage of users, doctor notes, and actionable steps.
+- Encrypted Fields ensure that sensitive patient data remains secure.
+- Redis is utilized for caching and managing Celery task queues efficiently.
+
 ## ER Diagram of Database Design
 ![alt text](graph.png)
 
