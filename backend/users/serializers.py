@@ -39,6 +39,8 @@ class DoctorPatientSerializer(serializers.ModelSerializer):
         
         
 class DoctorNoteSerializer(serializers.ModelSerializer):
+    patient = UserLoginSerializer()
+    doctor = UserLoginSerializer()
     class Meta:
         model = DoctorNote
         fields = ["id", "doctor", "patient", "note", "created_at"]
@@ -50,6 +52,7 @@ class ActionableStepSerializer(serializers.ModelSerializer):
 
 class ReminderSerializer(serializers.ModelSerializer):
     patient = UserLoginSerializer()
+    actionable_step = ActionableStepSerializer()
     class Meta:
         model = Reminder
         fields = ["id", "patient", "actionable_step", "scheduled_time", "sent"]

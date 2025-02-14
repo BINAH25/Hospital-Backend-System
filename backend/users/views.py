@@ -113,10 +113,10 @@ class AssignDoctorAPI(generics.GenericAPIView):
         patient = request.user
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            doctor_email = serializers.data["doctor_email"]
+            doctor_email = serializer.data["doctor_email"]
         
             if patient.user_type != "Patient":
-                return Response({"error": "Only patients can assign doctors."}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"error": "You are not a Patient."}, status=status.HTTP_403_FORBIDDEN)
 
             doctor = get_object_or_404(User, email=doctor_email, user_type="Doctor")
 
@@ -140,7 +140,7 @@ class GetDoctorPatientsAPI(generics.GenericAPIView):
     def get(self, request,*args, **kwargs):
         user = self.request.user
         if user.user_type != "Doctor":
-            return PatientDoctorAssignment.objects.none()
+            return Response({"error": "You are not a Doctor."}, status=status.HTTP_403_FORBIDDEN)
         
         patients = PatientDoctorAssignment.objects.filter(doctor=user)
         serializers = self.serializer_class(patients,many=True)
@@ -162,8 +162,8 @@ class DoctorNoteAPI(generics.GenericAPIView):
         
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            patient_email = serializers.data["patient_email"]
-            note_text = serializers.data["note"]
+            patient_email = serializer.data["patient_email"]
+            note_text = serializer.data["note"]
 
 
             patient = get_object_or_404(User, email=patient_email, user_type="Patient")
