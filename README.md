@@ -43,3 +43,43 @@ Ensure you have the following installed:
 Python 3.10
 
 Redis
+
+## Setup
+1. **Clone the Repository:**
+   ```bash
+   https://github.com/BINAH25/Hospital-Backend-System-.git
+   cd Hospital-Backend-System-
+
+2. **Create Virtual Environment:**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+
+3. **Install the requires packages:**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+
+
+4. **Run the following commands:**
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+
+5. **Start Redis server:**
+   ```bash
+   python manage.py createsuperuser 
+
+6. **Run the server:**
+   ```bash
+   redis-server
+![alt text](image.png)
+
+7. **Start Celery worker:**
+   ```bash
+   celery -A backend worker --loglevel=debug
+![alt text](image-1.png)
+
+8. **Visit the url below to display the login page:**
+   ```bash
+   http://127.0.0.1:8000/
