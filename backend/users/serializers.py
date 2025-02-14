@@ -54,7 +54,14 @@ class ReminderSerializer(serializers.ModelSerializer):
         model = Reminder
         fields = ["id", "patient", "actionable_step", "scheduled_time", "sent"]
 
-class CodeEmailSerializer(serializers.Serializer):
+class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     password = serializers.CharField(max_length=254)
+    
+class DoctormailSerializer(serializers.Serializer):
+    doctor_email = serializers.EmailField(max_length=254)
+    
+class NoteSerializer(serializers.Serializer):
+    patient_email = serializers.EmailField(max_length=254)
+    note = serializers.CharField(max_length=254)
 

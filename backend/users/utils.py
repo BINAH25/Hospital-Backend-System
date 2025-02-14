@@ -37,24 +37,19 @@ def extract_actionable_steps(note_text):
     }}
     """
 
-
     response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
 
     try:
         # Extract response text properly
         json_text = response.text.strip("```json").strip("```") if hasattr(response, "text") else "{}"
 
-        print("############### Extracted JSON Text:", json_text)
-
         # Convert string to JSON
         result = json.loads(json_text)
-        print("##### Parsed Result:", result)
 
         checklist = result.get("Checklist", [])
         plan = result.get("Plan", [])
     except json.JSONDecodeError:
         checklist, plan = [], []
-        print("##### JSON Parsing Failed")
 
     return checklist, plan
 
@@ -66,16 +61,16 @@ def process_plan_steps(note, plan_data):
     """
     for task in plan_data:
         task_name = task["task"]
-        duration_days = int(task["duration"].split()[0])  # Extracting number of days
-        frequency = task.get("frequency", "daily")  # Default to daily if missing
+        duration_days = int(task["duration"].split()[0])  
+        frequency = task.get("frequency", "daily")  
 
         step = ActionableStep.objects.create(
             note=note,
             step_type="Plan",
             description=task_name,
-            scheduled_date = make_aware(timezone.now()).date(),
-            frequency=frequency,  # Store the frequency in the model
-            duration=duration_days  # Store the duration in the model
+            scheduled_date = timezone.now().date(),
+            frequency=frequency,  
+            duration=duration_days 
         )
 
         # Schedule Reminders
@@ -96,7 +91,6 @@ def schedule_reminders(patient, step, duration_days, frequency):
         "twice a day": 0.5,  # Every 12 hours
         "weekly": 7
     }
-    print("printing duration:", duration_days)
 
     interval_days = intervals.get(frequency, 1)
     reminder_date = start_date

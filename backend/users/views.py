@@ -13,6 +13,7 @@ from django.conf import settings
 import re
 from datetime import timedelta
 from django.utils import timezone
+from users.tasks import *
 User = get_user_model()
 # Create your views here.
 
@@ -21,15 +22,17 @@ def get_auth_for_user(user):
     refresh = RefreshToken.for_user(user)
     return {
         'user':UserLoginSerializer(user).data,
-        # 'permission':get_all_user_permissions(user),
         'refresh': str(refresh),
         'token': str(refresh.access_token) 
     }
     
     
 class SignInAPI(generics.GenericAPIView):
+    """
+    authenticate and login the user.
+    """
     permission_classes = [permissions.AllowAny]
-    serializer_class = CodeEmailSerializer
+    serializer_class = LoginSerializer
     def post(self, request,*args, **kwargs):
         serializers = self.serializer_class(data=request.data)
         if serializers.is_valid():
@@ -58,6 +61,7 @@ class SignInAPI(generics.GenericAPIView):
             )
             
 class RegistrationAPI(generics.GenericAPIView):
+    """" Validate  and register the user"""
     permission_classes = [permissions.AllowAny]
     serializer_class = UserRegistrationSerializer
     def post(self, request,*args, **kwargs):
@@ -87,6 +91,7 @@ class RegistrationAPI(generics.GenericAPIView):
             
             
 class GetAllDoctorsAPI(generics.GenericAPIView):
+    """ Get all doctors """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserRegistrationSerializer
 
@@ -100,27 +105,35 @@ class GetAllDoctorsAPI(generics.GenericAPIView):
         
 
 class AssignDoctorAPI(generics.GenericAPIView):
+    """ Assign A Patient to a Doctor"""
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = PatientDoctorAssignmentSerializer
+    serializer_class = DoctormailSerializer
 
     def post(self, request, *args, **kwargs):
         patient = request.user
-        doctor_email = request.data.get("doctor_email")
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            doctor_email = serializers.data["doctor_email"]
         
-        if patient.user_type != "Patient":
-            return Response({"error": "Only patients can assign doctors."}, status=status.HTTP_403_FORBIDDEN)
+            if patient.user_type != "Patient":
+                return Response({"error": "Only patients can assign doctors."}, status=status.HTTP_403_FORBIDDEN)
 
-        doctor = get_object_or_404(User, email=doctor_email, user_type="Doctor")
+            doctor = get_object_or_404(User, email=doctor_email, user_type="Doctor")
 
-        assignment, created = PatientDoctorAssignment.objects.update_or_create(
-            patient=patient, defaults={"doctor": doctor}
-        )
+            assignment, created = PatientDoctorAssignment.objects.update_or_create(
+                patient=patient, defaults={"doctor": doctor}
+            )
 
-        return Response(PatientDoctorAssignmentSerializer(assignment).data, status=status.HTTP_201_CREATED)
-
+            return Response(PatientDoctorAssignmentSerializer(assignment).data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(
+                {"status": "failure", "detail": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     
 class GetDoctorPatientsAPI(generics.GenericAPIView):
+    """ Get All Patients of a Doctor"""
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = DoctorPatientSerializer
 
@@ -137,41 +150,53 @@ class GetDoctorPatientsAPI(generics.GenericAPIView):
         )       
 
 class DoctorNoteAPI(generics.GenericAPIView):
+    """ For Submitting doctor notes and processing actionable steps."""
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = DoctorNoteSerializer
+    serializer_class = NoteSerializer
 
     def post(self, request, *args, **kwargs):
         doctor = request.user
 
         if doctor.user_type != "Doctor":
             return Response({"error": "Only doctors can submit notes."}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            patient_email = serializers.data["patient_email"]
+            note_text = serializers.data["note"]
 
-        patient_email = request.data.get("patient_email")
-        note_text = request.data.get("note")
 
-        patient = get_object_or_404(User, email=patient_email, user_type="Patient")
+            patient = get_object_or_404(User, email=patient_email, user_type="Patient")
 
-        # Encrypt and save the note
-        note = DoctorNote.objects.create(doctor=doctor, patient=patient)
-        note.set_encrypted_note(note_text)
-        note.save()
+            # Encrypt and save the note
+            note = DoctorNote.objects.create(doctor=doctor, patient=patient)
+            note.set_encrypted_note(note_text)
+            note.save()
 
-        # Cancel existing actionable steps
-        ActionableStep.objects.filter(note__patient=patient).delete()
+            # Cancel existing actionable steps
+            ActionableStep.objects.filter(note__patient=patient).delete()
 
-        checklist, plan = extract_actionable_steps(note_text)
+            checklist, plan = extract_actionable_steps(note_text)
 
-        # Save Checklist Tasks (Immediate One-Time Actions)
-        for task in checklist:
-            ActionableStep.objects.create(note=note, step_type="Checklist", description=task)
+            # Save Checklist Tasks (Immediate One-Time Actions)
+            for task in checklist:
+                ActionableStep.objects.create(note=note, step_type="Checklist", description=task)
 
-        # Process Plan Tasks (Scheduled Actions) using the helper function
-        process_plan_steps(note, plan)
+            # Process Plan Tasks (Scheduled Actions) using the helper function
+            if plan:
+                process_plan_steps(note, plan)
 
-        return Response(DoctorNoteSerializer(note).data, status=status.HTTP_201_CREATED)
+            return Response(DoctorNoteSerializer(note).data, status=status.HTTP_201_CREATED)
+        
+        else:
+            return Response(
+                {"status": "failure", "detail": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     
 class PatientActionableStepsAPI(generics.GenericAPIView):
+    """For Retrieving actionable steps of Patients"""
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ActionableStepSerializer
 
@@ -185,6 +210,7 @@ class PatientActionableStepsAPI(generics.GenericAPIView):
     
     
 class PatientRemindersAPI(generics.GenericAPIView):
+    """ For Getting Patients reminders"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
