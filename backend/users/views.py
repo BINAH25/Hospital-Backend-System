@@ -220,3 +220,25 @@ class PatientRemindersAPI(generics.GenericAPIView):
 
         reminders = get_upcoming_reminders(patient)
         return Response(ReminderSerializer(reminders, many=True).data, status=status.HTTP_200_OK)
+
+
+class PatientCheckInAPI(generics.GenericAPIView):
+    """ Reduce the dynamic schedules plan"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        patient = request.user
+
+        if patient.user_type != "Patient":
+            return Response({"error": "Only patients can check in."}, status=status.HTTP_403_FORBIDDEN)
+
+        steps = ActionableStep.objects.filter(note__patient=patient, step_type="Plan")
+
+        updated_steps = []
+        for step in steps:
+            if step.reduce_duration_on_checkin():  
+                updated_steps.append(step.description)
+
+        if updated_steps:
+            return Response({"message": "Check-in successful. Updated steps:", "steps": updated_steps}, status=status.HTTP_200_OK)
+        return Response({"message": "Check-in successful. No steps updated."}, status=status.HTTP_200_OK)

@@ -16,9 +16,6 @@ def reduce_actionable_step_duration():
 
     for step in steps:
         if step.duration and int(step.duration) > 0:
-            step.duration = str(int(step.duration) - 1)  
-            step.save()
-
             # Send email reminder
             send_email_reminder(step)
 

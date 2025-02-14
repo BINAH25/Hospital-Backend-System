@@ -53,6 +53,8 @@ class DoctorNote(models.Model):
     def __str__(self):
         return f"Note by {self.doctor.name} for {self.patient.name} on {self.created_at}"
     
+
+    
 class ActionableStep(models.Model):
     CHECKLIST = "Checklist"
     PLAN = "Plan"
@@ -68,10 +70,18 @@ class ActionableStep(models.Model):
     duration = models.CharField(max_length=200, null=True, blank=True)
     step_type = models.CharField(max_length=10, choices=STEP_TYPES)
     description = models.TextField()
-    scheduled_date = models.DateTimeField(null=True, blank=True)  # For scheduled tasks
+    scheduled_date = models.DateTimeField(null=True, blank=True) 
     completed = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def reduce_duration_on_checkin(self):
+        """Reduces duration by 1 when a patient checks in."""
+        if self.step_type == "Plan" and self.duration and self.duration > 0:
+            self.duration -= 1
+            self.save()
+            return True  
+        return False  
 
     def __str__(self):
         return f"{self.step_type} - {self.description[:30]}"

@@ -13,6 +13,7 @@ urlpatterns = [
     path("doctor-notes/", views.DoctorNoteAPI.as_view()),
     path("get-pationt-action-steps/", views.PatientActionableStepsAPI.as_view()),
     path("get-pationt-reminders/", views.PatientRemindersAPI.as_view()),
+    path("pationt-chech-in/", views.PatientCheckInAPI.as_view()),
 
     
 ]
